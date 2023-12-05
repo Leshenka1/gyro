@@ -13,20 +13,21 @@
             var t=d.getTime();
             var r = event.rotationRate;
 
-            if (counter % 100 == 0) {
-                if (last_time != 0) {
+            if (counter % 20 === 0) {
+                if (last_time !== 0) {
                     delta = t - last_time; //in msec
-                    rate = 100.0*1000/delta;
+                    rate = 20.0 * 1000 / delta;
                 }
                 last_time = t;
 
                 html = 'Rotation rate:<br />';
                 html += 'alpha: ' + r.alpha +'<br />beta: ' + r.beta + '<br/>gamma: ' + r.gamma + '<br />';
                 html += 'Reported update interval (msec): ' + event.interval + '<br />';
-                html += 'Calculated rate (samples per sec): ' + rate + '<br />';
+                html += 'Calculated rate (samples per sec Hz1): ' + rate + '<br />';
                 dataContainerMotion.innerHTML = html;
 
             }
+
 
             counter += 1;
 
@@ -36,6 +37,7 @@
 //        var html = 'Acceleration:<br />';
 //        html += 'x: ' + x +'<br />y: ' + y + '<br/>z: ' + z+ '<br />';
 //        html += 'Rotation rate:<br />';
+
 
             if(r!=null) {
                 content += (t + '\t' + r.alpha + '\t' + r.beta + '\t' + r.gamma + '\n');
@@ -67,8 +69,36 @@
             //}
 
             // Check for support for DeviceMotion events
-            if(window.DeviceMotionEvent) {
-                window.addEventListener('devicemotion', motionlistener);
+            // if(window.DeviceMotionEvent) {
+            //   window.addEventListener('devicemotion', motionlistener);
+            // }
+
+            // ????????? ????????? API
+            if ('Gyroscope' in window) {
+                const gyroscope = new Gyroscope({frequency: 300});
+                let lastTimestamp;
+
+                gyroscope.addEventListener('reading', e => {
+                    let currentTimeStamp = Date.now();
+                    if(lastTimestamp) {
+                        let deltaTime = currentTimeStamp - lastTimestamp; // Time difference in milliseconds
+                        let frequency = 1000 / deltaTime; // Calculate frequency
+
+                        html = 'Rotation rate via API Generic Sensor:<br />';
+                        html += 'alpha: ' + gyroscope.x +'<br />beta: ' + gyroscope.y + '<br/>gamma: ' + gyroscope.z + '<br />';
+                        html += 'Reported update interval (msec): ' + deltaTime + '<br />';
+                        html += 'Calculated frequency (Hz): ' + frequency + '<br />';
+                        dataContainerMotion.innerHTML = html;
+                    }
+
+                    lastTimestamp = currentTimeStamp; // Update lastTimestamp for the next reading
+                });
+
+                gyroscope.start();
+            }
+            else{
+                html += 'No Rotation Data from API Generic Sensor <br />';
+                dataContainerMotion.innerHTML = html;
             }
         }
 
@@ -98,7 +128,7 @@
       No device orientation data
     </div> -->
     <div id="dataContainerMotion">
-        No device motion data
+        No device motion data 13
     </div>
     <button id="action" onclick="init()">Start Recording</button>
 
